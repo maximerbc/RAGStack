@@ -1,0 +1,4 @@
+[console_scripts]
+rag-2026 = app.main:run
+rag-2026-download-model = app.services.reranker:download_default_model
+rag-2026-perf-50k = app.perf:main

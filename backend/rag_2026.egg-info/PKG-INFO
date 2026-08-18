@@ -1,0 +1,20 @@
+Metadata-Version: 2.4
+Name: rag-2026
+Version: 0.1.0
+Summary: Production-engineered conversational RAG with live evaluation
+Requires-Python: <3.14,>=3.10
+Requires-Dist: beautifulsoup4>=4.12
+Requires-Dist: docling>=2.50
+Requires-Dist: fastapi>=0.115
+Requires-Dist: lancedb>=0.24
+Requires-Dist: openai>=1.100
+Requires-Dist: pydantic-settings>=2.8
+Requires-Dist: python-multipart>=0.0.20
+Requires-Dist: sentence-transformers>=4.0
+Requires-Dist: tiktoken>=0.9
+Requires-Dist: uvicorn[standard]>=0.34
+Provides-Extra: dev
+Requires-Dist: httpx>=0.28; extra == "dev"
+Requires-Dist: pytest>=8.3; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.25; extra == "dev"
+Requires-Dist: ruff>=0.11; extra == "dev"

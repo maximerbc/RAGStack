@@ -1,0 +1,17 @@
+.env
+.env.local
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.py[cod]
+node_modules/
+.npm-cache/
+frontend/dist/
+frontend/playwright-report/
+frontend/test-results/
+data/*
+!data/.gitkeep
+.models/
+*.log
+.DS_Store
