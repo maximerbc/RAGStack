@@ -25,6 +25,8 @@ from app.services.parser import DocumentParser
 from app.services.reranker import Reranker, build_reranker
 from app.services.retrieval import RetrievalService
 
+FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+
 
 @dataclass
 class Services:
@@ -87,7 +89,7 @@ def create_app(
         ingestion.stop()
         worker.cancel()
 
-    app = FastAPI(title="RAG 2026 API", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="RAGStack API", version="0.1.0", lifespan=lifespan)
     app.state.services = services
     app.add_middleware(
         CORSMiddleware,
@@ -96,7 +98,7 @@ def create_app(
         allow_headers=["*"],
     )
     app.include_router(router)
-    dist = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+    dist = FRONTEND_DIST.resolve()
     if dist.exists():
         assets = dist / "assets"
         if assets.exists():
@@ -104,8 +106,10 @@ def create_app(
 
         @app.get("/{path:path}")
         async def spa(path: str):
-            requested = dist / path
-            return FileResponse(requested if requested.is_file() else dist / "index.html")
+            requested = (dist / path).resolve()
+            if requested.is_relative_to(dist) and requested.is_file():
+                return FileResponse(requested)
+            return FileResponse(dist / "index.html")
 
     return app
 

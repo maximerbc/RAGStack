@@ -8,30 +8,31 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "screenshots": "PLAYWRIGHT_BROWSERS_PATH=../.models/playwright playwright test --config playwright.screenshots.config.ts"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "lucide-react": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "react-markdown": "latest"
+    "lucide-react": "^1.31.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-markdown": "^10.1.0"
   },
   "devDependencies": {
-    "@eslint/js": "latest",
-    "@playwright/test": "latest",
-    "@testing-library/jest-dom": "latest",
-    "@testing-library/react": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "eslint": "latest",
-    "eslint-plugin-react-hooks": "latest",
-    "eslint-plugin-react-refresh": "latest",
-    "globals": "latest",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "eslint": "^10.8.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.4",
+    "globals": "^17.11.0",
     "jsdom": "^26.1.0",
     "typescript": "~5.8.3",
-    "typescript-eslint": "latest",
-    "vite": "latest",
-    "vitest": "latest"
+    "typescript-eslint": "^8.67.0",
+    "vite": "^8.2.1",
+    "vitest": "^4.1.10",
+    "@vitejs/plugin-react": "^6.0.5"
   }
 }

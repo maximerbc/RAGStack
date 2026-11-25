@@ -11,7 +11,7 @@ vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
 
 test('renders the product navigation and credential status', async () => {
   render(<App />)
-  expect(screen.getByText('RAG 2026')).toBeInTheDocument()
+  expect(screen.getByText('RAGStack')).toBeInTheDocument()
   expect(screen.getByText('Documents')).toBeInTheDocument()
   expect(await screen.findByText('API key not configured')).toBeInTheDocument()
 })

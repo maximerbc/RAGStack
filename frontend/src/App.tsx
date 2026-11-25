@@ -16,7 +16,7 @@ export default function App() {
   ] as const
   return <div className="app-shell">
     <aside className="sidebar">
-      <div className="brand"><span className="brand-mark"><Sparkles size={18}/></span><div><strong>RAG 2026</strong><small>Evidence engine</small></div></div>
+      <div className="brand"><span className="brand-mark"><Sparkles size={18}/></span><div><strong>RAGStack</strong><small>Evidence engine</small></div></div>
       <nav>{nav.map(([id, Icon, label]) => <button key={id} className={page === id ? 'active' : ''} onClick={() => setPage(id)}><Icon size={18}/><span>{label}</span></button>)}</nav>
       <div className="sidebar-foot">
         <div className={`status-dot ${health?.status === 'ready' ? 'ok' : ''}`}><Activity size={14}/> {health?.status ?? 'Connecting'}</div>

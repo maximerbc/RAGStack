@@ -79,3 +79,24 @@ def test_terminal_sse_replays_completion_for_late_subscribers(tmp_path):
         with client.stream("GET", f"/api/turns/{turn['id']}/events") as stream:
             payload = "".join(stream.iter_text())
         assert "event: complete" in payload
+
+
+def test_built_frontend_serves_assets_and_confines_fallback(tmp_path, monkeypatch):
+    import app.main as main
+
+    dist = tmp_path / "frontend" / "dist"
+    (dist / "assets").mkdir(parents=True)
+    (dist / "index.html").write_text("<title>RAGStack</title>")
+    (dist / "assets" / "app.js").write_text("console.log('RAGStack')")
+    (dist.parent / "private.txt").write_text("private-file")
+    monkeypatch.setattr(main, "FRONTEND_DIST", dist)
+    settings = Settings(
+        app_data_dir=tmp_path / "data", embedding_dimensions=8, reranker_backend="fake"
+    )
+    app = create_app(settings, FakeAIProvider(), MemoryChunkIndex(), FakeReranker())
+    with TestClient(app) as client:
+        assert "RAGStack" in client.get("/").text
+        assert client.get("/assets/app.js").text == "console.log('RAGStack')"
+        assert "RAGStack" in client.get("/chat").text
+        assert "private-file" not in client.get("/%2e%2e/private.txt").text
+        assert client.get("/api/health").json()["status"] == "ready"
