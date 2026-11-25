@@ -1,1 +1,1 @@
-"""RAG 2026 application package."""
+"""RAGStack application package."""

@@ -1,68 +1,99 @@
-# RAG 2026
+# RAGStack
 
-A single-user conversational RAG application with a deliberately small retrieval algorithm and production-grade infrastructure around it.
+Conversational document search with hybrid retrieval, inspectable evidence, and built-in evaluation.
 
-```text
-query rewrite → BM25 + dense → RRF → reranker → adaptive K
-             → neighbor expansion → grounded answer → citations
+RAGStack lets you upload documents, ask questions and follow-ups, and inspect the passages behind each answer. It is a single-user, locally run AI engineering project built with **FastAPI, React, TypeScript, LanceDB, SQLite, and OpenAI**.
+
+![RAGStack chat with citations and retrieval diagnostics](docs/images/chat.png)
+*Actual application UI with fictional, deterministic fixtures. Answers, timings, and scores shown in screenshots are illustrative, not measured model results.*
+
+## What you can explore
+
+- **Document ingestion:** PDF, DOCX, Markdown, plain text, and HTML; structure-aware chunks, duplicate detection, and versioned reindexing.
+- **Hybrid retrieval:** lexical BM25 and dense vector search, explicit reciprocal rank fusion (RRF), a CPU cross-encoder reranker, adaptive evidence selection, and neighboring passages.
+- **Grounded conversations:** streamed answers, source excerpts and original-document links, follow-up query rewriting, and per-stage retrieval diagnostics.
+- **Evaluation tooling:** optional LLM-only comparison, blinded pairwise judging, reference answers, retrieval metrics, case import/export, and live run progress.
+
+## How it works
+
+```mermaid
+flowchart LR
+    D[Upload documents] --> P[Parse and chunk]
+    P --> E[OpenAI embeddings]
+    E --> L[(LanceDB chunks and vectors)]
+    Q[Question and history] --> W[Standalone query]
+    W --> H[BM25 + dense search]
+    L --> H
+    H --> R[Reciprocal rank fusion]
+    R --> C[CPU cross-encoder reranking]
+    C --> K[Adaptive K + neighbor expansion]
+    K --> A[Stream answer with evidence IDs]
+    A --> U[Source citations and diagnostics]
 ```
 
-The web application includes document management, cited conversational answers, retrieval diagnostics, optional LLM-only comparison, evaluation-case authoring/import, and live benchmark results.
+SQLite stores document versions, ingestion jobs, conversations, and evaluation runs. The server resolves citation filenames and pages from stored metadata. [Architecture and tradeoffs](docs/architecture.md) explains the data flow and code map.
 
-## Requirements
+## Run locally
 
-- Python 3.10–3.13
-- Node.js 20+
-- An OpenAI API key for live embeddings, rewriting, generation, and judging
-- Approximately 1 GB free disk space for dependencies and the default CPU reranker
-
-## Setup
+**Prerequisites:** Python 3.10–3.13, Node.js 22, npm, and `make`. Setup downloads Python/JavaScript dependencies; caching the reranker also downloads model weights. Live ingestion and chat require an OpenAI API key with access to the models selected in your configuration.
 
 ```bash
+git clone https://github.com/maximerbc/RAGStack.git
+cd RAGStack
 make setup
 cp .env.example .env
+```
+
+Edit `.env`: set `OPENAI_API_KEY` and select generation, rewrite, judge, and embedding models available to your account. Keep credentials in the ignored `.env` file. Live ingestion, chat, and judging make billable API calls; document text and questions are sent to OpenAI as needed for these operations.
+
+```bash
 make model
 make dev
 ```
 
-Add your real `OPENAI_API_KEY` only to the ignored `.env` file. The application is available at `http://127.0.0.1:5173` during development. The API and OpenAPI documentation run at `http://127.0.0.1:8000/docs`.
+Open [the application](http://127.0.0.1:5173) or [the API documentation](http://127.0.0.1:8000/docs). Stop both development servers with `Ctrl+C`. Start with the [sample document and walkthrough](docs/walkthrough.md).
 
-To use the application without live credentials during development, run the automated suite; all OpenAI paths have deterministic fakes.
+You can run the automated checks without an API key. These use deterministic AI/reranker fakes; they do not demonstrate live model quality or offer an offline chat mode.
 
-## Commands
+## Development commands
 
 | Command | Purpose |
-|---|---|
-| `make setup` | Create `.venv` and install backend/frontend dependencies |
-| `make dev` | Start FastAPI and Vite together |
-| `make model` | Cache the default CPU reranker |
-| `make browser` | Cache Chromium for local browser tests |
-| `make test` | Run backend and frontend tests |
-| `make e2e` | Run the Playwright navigation flow |
-| `make lint` | Run Python and TypeScript linting |
-| `make build` | Build the production React bundle |
-| `make perf` | Verify warm retrieval over 50,000 synthetic chunks |
-| `make backend` | Run only the API |
+| --- | --- |
+| `make setup` | Create `.venv`, install backend dependencies and locked frontend dependencies |
+| `make dev` | Start FastAPI and Vite on loopback addresses |
+| `make test` | Run backend and frontend unit/integration tests |
+| `make lint` | Check Python and frontend code |
+| `make build` | Type-check and build the frontend |
+| `make browser` | Install Chromium for browser tests |
+| `make e2e` | Run browser navigation checks |
+| `make model` | Download/cache the CPU reranker |
+| `make perf` | Run the synthetic 50,000-chunk warm-retrieval check |
+| `make backend` | Start FastAPI; also serves the frontend after `make build` |
 
-After `make build`, FastAPI serves the frontend at `http://127.0.0.1:8000`.
+[Evaluation methodology](docs/evaluation.md) documents case formats, metric limitations, and the difference between synthetic checks and end-to-end performance. CI runs lint, tests, build, and browser checks with fake AI providers and no API credentials.
 
-## Evaluation-case formats
+## Screens
 
-JSONL uses one object per line:
+| Documents | Benchmarks |
+| --- | --- |
+| ![Document management](docs/images/documents.png) | ![Evaluation cases and run history](docs/images/benchmarks.png) |
 
-```json
-{"question":"What was FY2026 revenue?","reference_answer":"Revenue was ...","history":[],"relevant_evidence":[{"document_id":"...","page":12}],"tags":["finance"],"notes":""}
-```
+All screenshots use fictional fixtures. Recreate them with `cd frontend && npm run screenshots` after `make browser`.
 
-CSV uses the same field names. `history`, `relevant_evidence`, and `tags` contain JSON arrays.
+## Project map
 
-Official benchmark runs require reference answers and relevant evidence for meaningful correctness and retrieval metrics. Ad-hoc chat comparisons are explicitly labeled reference-free estimates.
+| Location | Responsibility |
+| --- | --- |
+| `backend/app/api/` | HTTP endpoints and server-sent events |
+| `backend/app/services/` | Ingestion, retrieval, generation, and evaluation |
+| `backend/app/config.py`, `db.py`, `schemas.py` | Configuration, SQLite persistence, and data contracts |
+| `frontend/src/` | Chat, document management, benchmarks, and API client |
+| `backend/tests/`, `frontend/tests/` | Backend checks and browser flows |
+| `examples/` | Fictional document for the local walkthrough |
+| `docs/` | Architecture, evaluation, walkthrough, and screenshots |
 
-## Architecture boundaries
+## Current boundaries
 
-- `Reranker` is a protocol. MiniLM is the default CPU implementation, not an architectural dependency.
-- The query rewriter produces exactly one standalone query and falls back to the original question.
-- Lexical and dense ranks remain separate through retrieval; RRF is implemented explicitly for observability.
-- Source filenames, pages, and document links are resolved by the server, never generated by the LLM.
-- Exact-duplicate documents are rejected; reindexing activates a new document version only after indexing succeeds.
-- OCR, agents, GraphRAG, HyDE, multi-query expansion, RAPTOR, and external infrastructure are intentionally outside v1.
+This is a local, single-user application. Authentication, multi-user isolation, and a hosted deployment are outside its current scope. Health status reports application readiness and configured credentials, not verified access to the provider. OCR is not a supported workflow; start with text documents or text-based PDFs. The parser delegates PDF/DOCX conversion to Docling, whose behavior may vary with its installed version.
+
+Citation checks validate evidence IDs; they do not prove that every generated claim is supported. LLM judge scores are estimates, and the repository does not include a measured quality study or production latency results. Agents, GraphRAG, HyDE, multi-query expansion, and RAPTOR are outside v1.

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "rag-2026"
 version = "0.1.0"
-description = "Production-engineered conversational RAG with live evaluation"
+description = "Conversational document search with hybrid retrieval, citations, and evaluation"
 requires-python = ">=3.10,<3.14"
 dependencies = [
   "beautifulsoup4>=4.12",
@@ -43,6 +43,7 @@ where = ["backend"]
 testpaths = ["backend/tests"]
 pythonpath = ["backend"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
 line-length = 100

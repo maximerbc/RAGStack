@@ -4,7 +4,7 @@ setup:
 	python3 -m venv .venv
 	.venv/bin/python -m pip install --upgrade pip
 	.venv/bin/pip install -e '.[dev]'
-	cd frontend && npm install --cache ../.npm-cache
+	cd frontend && npm ci --cache ../.npm-cache
 
 dev:
 	./scripts/dev.sh
